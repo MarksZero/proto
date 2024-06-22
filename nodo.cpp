@@ -43,8 +43,7 @@ int main(int nargs, char *arg_arr[]) {
         printf("Mi IP: %s\n", nombreIP);
         printf("Seleccione nodo de destino (1-3) o 255 para broadcast\n");
         printf("Ejemplo --> 2 / MENSAJE.\n");
-        printf("|----------------------------|\n);
-
+        printf("|----------------------------|\n");
         while (true) {
             // Lee mensajes del puerto virtual
             len = readSlip((BYTE *)&received_frame, sizeof(frame_ipv4), vport_lee);
