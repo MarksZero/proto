@@ -5,12 +5,13 @@
 
 #define LEN 1500
 #define BYTE unsigned char
+#define MAX_TTL 3
 
 struct frame_ipv4 {
     BYTE flag_fragmento = 0;
     int offset_fragmento = 0;
     BYTE len_datos[2] = {0};
-    BYTE TTL = 0;
+    BYTE TTL = MAX_TTL;
     BYTE identificacion = 0;
     BYTE s_verificacion[2] = {0};
     BYTE ip_origen[4] = {0};
@@ -30,7 +31,7 @@ int main(int nargs, char *arg_arr[]) {
 
         // Obtiene puertos virtuales
         char *virtual_port_tx = arg_arr[2];
-        char *virtual_port_rx = arg_arr[3];  // Corregido aquí
+        char *virtual_port_rx = arg_arr[3];
 
         FILE *vport_escribe = fopen(virtual_port_tx, "w");
         FILE *vport_lee = fopen(virtual_port_rx, "r");
@@ -47,12 +48,18 @@ int main(int nargs, char *arg_arr[]) {
             // Lee mensajes del puerto virtual
             len = readSlip((BYTE *)&received_frame, sizeof(frame_ipv4), vport_lee);
             if (len > 0) {
-                if (received_frame.ip_destino[3] == frame.ip_origen[3] || received_frame.ip_destino[3] == 255) {
+                bool is_for_me = (received_frame.ip_destino[3] == frame.ip_origen[3]);
+                bool is_broadcast = (received_frame.ip_destino[3] == 255);
+
+                if (is_for_me || is_broadcast) {
                     printf("\n------------------------------------------\n");
                     printf("Mensaje recibido de 192.168.130.%d: %s\n",
                            received_frame.ip_origen[3], received_frame.DATA);
-                } else {
-                    // Reenvía el mensaje al siguiente nodo
+                }
+
+                // Reenvía el mensaje si no es para este nodo y el TTL > 0
+                if (!is_for_me && received_frame.TTL > 0) {
+                    received_frame.TTL--;
                     writeSlip((BYTE *)&received_frame, sizeof(frame_ipv4), vport_escribe);
                 }
             }
@@ -67,6 +74,7 @@ int main(int nargs, char *arg_arr[]) {
                 printf("escribio -> %s\n", msg);
 
                 sscanf(msg, "%hhu / %499[^\n]", &frame.ip_destino[3], frame.DATA);
+                frame.TTL = MAX_TTL;
 
                 writeSlip((BYTE *)&frame, sizeof(frame_ipv4), vport_escribe);
 
