@@ -8,7 +8,7 @@
 #define MAX_TTL 3
 
 
-int fcs(BYTE* buff);
+
 struct frame_ipv4 {
     BYTE flag_fragmento = 0;
     int offset_fragmento = 0;
@@ -21,6 +21,8 @@ struct frame_ipv4 {
     BYTE DATA[LEN] = {0};
 };
 
+int fcs(BYTE* buff);
+int largo_data(frame_ipv4 *frame);
 //---------------------------------------------------------------------------------------------------------------------
 
 int main(int nargs, char *arg_arr[]) {
@@ -60,10 +62,13 @@ int main(int nargs, char *arg_arr[]) {
                 bool es_broadcast = (received_frame.ip_destino[3] == 255); // Verifica si el mensaje es un broadcast
 
                 if (es_uni || es_broadcast) {
-                    printf("\n------------------------------------------\n");
                     printf("Mensaje de 192.168.130.%d: %s\n", received_frame.ip_origen[3], received_frame.DATA);
 
+                    printf("|--------------------------------------------|\n");
                     printf("FCS: %d\n", fcs((BYTE *) &frame));
+                    printf("Largo de los datos: %d\n", largo_data(&frame));
+                    printf("|--------------------------------------------|\n");
+
 
                 }
 
@@ -117,4 +122,11 @@ int fcs(BYTE* buff){
 
     }
     return fcs_value;
+}
+int largo_data(frame_ipv4 *frame) {
+    int i = 0;
+    while (frame->DATA[i] != '\0') {
+        i++;
+    }
+    return i;
 }
