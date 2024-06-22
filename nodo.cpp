@@ -38,27 +38,28 @@ int main(int nargs, char *arg_arr[]) {
 
         int stdin_desc = fileno(stdin);
 
-        printf("chat\n");
+        printf("|------------chat------------|\n");
         printf("Ya puede escribir sus mensajes!\n");
         printf("Mi IP: %s\n", nombreIP);
         printf("Seleccione nodo de destino (1-3) o 255 para broadcast\n");
         printf("Ejemplo --> 2 / MENSAJE.\n");
+        printf("|----------------------------|\n);
 
         while (true) {
             // Lee mensajes del puerto virtual
             len = readSlip((BYTE *)&received_frame, sizeof(frame_ipv4), vport_lee);
             if (len > 0) {
-                bool is_for_me = (received_frame.ip_destino[3] == frame.ip_origen[3]);
-                bool is_broadcast = (received_frame.ip_destino[3] == 255);
+                bool es_uni = (received_frame.ip_destino[3] == frame.ip_origen[3]);
+                bool es_broadcast = (received_frame.ip_destino[3] == 255);             // Verifica si el mensaje es un broadcast
 
-                if (is_for_me || is_broadcast) {
+                if (es_uni || es_broadcast) {
                     printf("\n------------------------------------------\n");
-                    printf("Mensaje recibido de 192.168.130.%d: %s\n",
+                    printf("Mensaje de 192.168.130.%d: %s\n",
                            received_frame.ip_origen[3], received_frame.DATA);
                 }
 
                 // Reenvía el mensaje si no es para este nodo y el TTL > 0
-                if (!is_for_me && received_frame.TTL > 0) {
+                if (!es_uni && received_frame.TTL > 0) {
                     received_frame.TTL--;
                     writeSlip((BYTE *)&received_frame, sizeof(frame_ipv4), vport_escribe);
                 }
