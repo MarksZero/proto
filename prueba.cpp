@@ -25,20 +25,8 @@ int main(int nargs, char* argv[]){
     printf("ip 2obtenida== %d\n", buff.ip_origen[1]);
     printf("ip 3obtenida== %d\n", buff.ip_origen[2]);
     printf("ip 4obtenida== %d\n", buff.ip_origen[3]);
-    /*
-    BYTE ip[4];
-    sscanf(nombreIP, "%hhu.%hhu.%hhu.%hhu", &ip[0], &ip[1], &ip[2], &ip[3]);
-    printf("ip 1obtenida== %d\n", ip[0]);
-    printf("ip 2obtenida== %d\n", ip[1]);
-    printf("ip 3obtenida== %d\n", ip[2]);
-    printf("ip 4obtenida== %d\n", ip[3]);
-    char nIP[16];
-    sprintf(nIP, "%hhu.%hhu.%hhu.%hhu", ip[0], ip[1], ip[2], ip[3]);
-    printf("ip recuperada == %s\n", nIP);
 
-    printf("%d\n",strcmp(nIP,nombreIP));
-    */
-    
+
     
 
     return 0;

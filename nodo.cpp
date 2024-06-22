@@ -38,13 +38,13 @@ int main(int nargs, char* arg_arr[]){
         //Obtiene puerto virtual rx
         char* virtual_port_rx = arg_arr[3];
 
-        FILE* vport_escribe = fopen(virtual_port_tx, "w");
+        FILE* vport_escribe = fopen(virtual_port_tx, "a+");
         FILE* vport_lee = fopen(virtual_port_rx, "r");
         //Inicia la capa 1 y 2
         //Obtiene descriptores
         int stdin_desc = fileno(stdin);
         //Obtiene descriptores
-  
+
         //Indica inicio del chat
         printf("chat\n");
         printf("Ya puede escribir sus mensajes !\n");
@@ -54,25 +54,33 @@ int main(int nargs, char* arg_arr[]){
         printf("Recuerde 255 es broadcast\n");
         printf("Rango entre 1-254 usuario\n");
         printf("Ejemplo --> 255 / MENSAJE.\n");
-        
+        printf("|-----------------------------------|\n");
+
         while(true){
             //Lee mensajes del puerto virtual y los muestra
             len = readSlip((BYTE*)msg_rx, 1000,vport_lee);
             msg_rx[len-1] = '\0';
-            if(len>0){ //y si es 255 entonces broadcast
-                printf("El otro usuario dice: %s", msg_rx);
-            }// si len mayor a 0 y ip destino igual a nombreIP entonces unicast
-            //sino omite
-            /*
-            
-            */
-            // len = readSlip((BYTE*)msg_rx,1000);
-            // msg_rx[len] = '\0';
-            // if(len>0){
-            //     printf("El otro usuario dice: %s", msg_rx);
-            // }
-            //Lee consola y envía el mensaje por el puerto virtual
-            
+            if(len>0){
+
+                if (strcmp(nombreIP, "192.168.130.1") == 0) {
+                    if (frame.ip_destino[3] == 255 || frame.ip_destino[3] == 1) {
+                        // Comportamiento para la primera variante de IP 1
+                        printf("El otro usuario dice: %s", msg_rx);
+                    }
+                } else if (strcmp(nombreIP, "192.168.130.2") == 0) {
+                    if (frame.ip_destino[3] == 255 || frame.ip_destino[3] == 2) {
+                        printf("El otro usuario dice: %s", msg_rx);
+                    }
+                } else if (strcmp(nombreIP, "192.168.130.3") == 0) {
+                    // Comportamiento para la tercera variante de IP 3
+                    if (frame.ip_destino[3] == 255 || frame.ip_destino[3] == 3) {
+                        printf("El otro usuario dice: %s", msg_rx);
+                    }
+                }
+
+                //printf("El otro usuario dice: %s", msg_rx);
+                printf("|-------------------------------------|");
+            }
 
             len = readPort(stdin_desc, (BYTE*)msg, 500, 100);
             msg[len] = '\0';
@@ -85,11 +93,11 @@ int main(int nargs, char* arg_arr[]){
                 frame.ip_destino[0]=192;
                 frame.ip_destino[1]=168;
                 frame.ip_destino[2]=130;
-                sscanf(msg, "%hhu / %499[^\n]", &frame.ip_destino[3], frame.DATA);            
+                sscanf(msg, "%hhu / %499[^\n]", &frame.ip_destino[3], frame.DATA);
                 writeSlip((BYTE*)msg, len,vport_escribe);
                 if(frame.ip_destino[3]==255){
-                    printf("BROADCAST DETECTADO %d -", frame.ip_destino[3]);
-                    printf("ENVIANDO DATA --> %s\n", frame.DATA);
+                    printf("BROADCAST DETECTADO %d - ", frame.ip_destino[3]);
+                    printf("\n ENVIANDO DATA --> %s\n", frame.DATA);
                 }else if(frame.ip_destino[3]>0 && frame.ip_destino[3]<255){
                     printf("UNICAST\n");
                     printf("ENVIANDO DATA --> %s\n", frame.DATA);
@@ -102,17 +110,6 @@ int main(int nargs, char* arg_arr[]){
 
 
         }
-    }else if(nargs==2 && strcmp(arg_arr[1],HELP)==0){
-        printf("MANUAL DE USUARIO:\n");
-		printf("-------------------\n");
-		printf("\t Modo de Uso:\n");
-		printf("\t\t1-.\t./nodo nombreIP emisor receptor\n");
-		printf("\t Ejemplo:\n");
-		printf("\t\t1-.\t./nodo 192.168.130.1 ../tmp/p1 ../tmp/p10\n");
-    }else{
-        //Se requiere un y solo un argumento; el puerto virtual
-        printf("Debe indicar el puerto virtual y/o IP!\n");
-        printf("Para mas ayuda escriba ./nodo -h\n");
-    }    
+    }
     return 0;
 }
